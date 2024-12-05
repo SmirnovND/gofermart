@@ -1,16 +1,31 @@
 package router
 
 import (
+	"fmt"
 	"github.com/SmirnovND/gofermart/internal/controllers"
+	"github.com/SmirnovND/gofermart/internal/pkg/container"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jmoiron/sqlx"
 	"net/http"
 )
 
-func Handler(db *sqlx.DB) http.Handler {
+func Handler(diContainer *container.Container) http.Handler {
+	var db *sqlx.DB
+	var authController *controllers.AuthController
+	err := diContainer.Invoke(func(d *sqlx.DB, controller *controllers.AuthController) {
+		db = d
+		authController = controller
+	})
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
 	r := chi.NewRouter()
 	r.Use(middleware.StripSlashes)
+
+	r.Post("/api/user/register", authController.HandleRegisterJSON)
 
 	healthcheckController := controllers.NewHealthcheckController(db)
 	r.Get("/ping", healthcheckController.HandlePing)

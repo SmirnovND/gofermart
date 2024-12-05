@@ -20,7 +20,7 @@ func ConfigureDB(db *sqlx.DB) {
 	db.SetMaxOpenConns(maxOpenConnections)
 }
 
-func NewDB(c config.Config) *sqlx.DB {
+func NewDB(c *config.Config) *sqlx.DB {
 	dsn := c.GetDBDsn()
 	if c.GetDBDsn() == "" {
 		dsn = "invalid_dsn"
@@ -65,9 +65,10 @@ func NewDB(c config.Config) *sqlx.DB {
 			log.Info().
 				Err(err).
 				Msg("Ошибка выполнения миграции ")
+		} else {
+			fmt.Println("Миграции применены успешно!")
 		}
 
-		fmt.Println("Миграции применены успешно!")
 	}
 
 	return db

@@ -7,7 +7,6 @@ import (
 	"github.com/SmirnovND/gofermart/internal/pkg/container"
 	"github.com/SmirnovND/gofermart/internal/pkg/loggeer"
 	"github.com/SmirnovND/gofermart/internal/router"
-	"github.com/jmoiron/sqlx"
 	"net/http"
 )
 
@@ -20,18 +19,16 @@ func main() {
 func Run() error {
 	diContainer := container.NewContainer()
 
-	var cf config.Config
-	var db *sqlx.DB
-	diContainer.Invoke(func(c config.Config, d *sqlx.DB) {
+	var cf *config.Config
+	diContainer.Invoke(func(c *config.Config) {
 		cf = c
-		db = d
 	})
 
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 
 	return http.ListenAndServe(cf.GetFlagRunAddr(), middleware.ChainMiddleware(
-		router.Handler(db),
+		router.Handler(diContainer),
 		loggeer.WithLogging,
 		compressor.WithDecompression,
 		compressor.WithCompression,
