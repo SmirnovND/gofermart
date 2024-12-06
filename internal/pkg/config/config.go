@@ -26,7 +26,7 @@ func NewConfigCommand() (cf *Config) {
 	flag.StringVar(&config.DBDsn, "d", "", "db dsn")
 	flag.StringVar(&config.FlagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.StringVar(&config.AccrualSystemAddress, "r", "localhost:8080", "AccrualSystemAddress")
-	flag.StringVar(&config.AccrualSystemAddress, "k", "your_secret_key", "jwtSecretKey")
+	flag.StringVar(&config.JwtSecretKey, "k", "yoursecretkey", "jwtSecretKey")
 
 	flag.Parse()
 

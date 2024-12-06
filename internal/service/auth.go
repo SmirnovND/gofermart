@@ -37,7 +37,7 @@ func (a *AuthService) GenerateToken(login string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Подписываем токен секретным ключом
-	return token.SignedString(a.cf.JwtSecretKey)
+	return token.SignedString([]byte(a.cf.JwtSecretKey))
 }
 
 func (a *AuthService) ValidateToken(tokenString string) (*Claims, error) {

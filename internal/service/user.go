@@ -18,7 +18,7 @@ func NewUserService(repo *repo.UserRepo, AuthService *AuthService) *UserService 
 }
 
 func (u *UserService) FinUser(login string) (*domain.User, error) {
-	return u.FinUser(login)
+	return u.repo.FindUser(login)
 }
 
 func (u *UserService) SaveUser(login string, pass string) (*domain.User, error) {
