@@ -24,3 +24,11 @@ func (a *AuthController) HandleRegisterJSON(w http.ResponseWriter, r *http.Reque
 	}
 	a.AuthUseCase.Register(w, credentials)
 }
+
+func (a *AuthController) HandleLoginJSON(w http.ResponseWriter, r *http.Request) {
+	credentials, err := paramsparser.JSONParse[domain.Credentials](w, r)
+	if err != nil {
+		return
+	}
+	a.AuthUseCase.Login(w, credentials)
+}

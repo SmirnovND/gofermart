@@ -19,10 +19,10 @@ type Container struct {
 func NewContainer() *Container {
 	c := &Container{container: dig.New()}
 	c.provideDependencies()
-	c.provideUsecase()
-	c.provideController()
 	c.provideRepo()
 	c.provideService()
+	c.provideUsecase()
+	c.provideController()
 	return c
 }
 
@@ -34,7 +34,8 @@ func (c *Container) provideDependencies() {
 }
 
 func (c *Container) provideUsecase() {
-	c.container.Provide(usecase.NewAuth)
+	c.container.Provide(usecase.NewAuthUseCase)
+	c.container.Provide(usecase.NewOrderUseCase)
 }
 
 func (c *Container) provideRepo() {
@@ -44,10 +45,12 @@ func (c *Container) provideRepo() {
 func (c *Container) provideService() {
 	c.container.Provide(service.NewAuthService)
 	c.container.Provide(service.NewUserService)
+	c.container.Provide(service.NewOrderService)
 }
 
 func (c *Container) provideController() {
 	c.container.Provide(controllers.NewAuthController)
+	c.container.Provide(controllers.NewOrderController)
 }
 
 // Invoke - функция для вызова и инжекта зависимостей
