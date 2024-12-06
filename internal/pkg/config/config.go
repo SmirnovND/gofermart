@@ -9,6 +9,7 @@ type Config struct {
 	DBDsn                string
 	FlagRunAddr          string
 	AccrualSystemAddress string
+	JwtSecretKey         string
 }
 
 func (c *Config) GetDBDsn() string {
@@ -25,6 +26,7 @@ func NewConfigCommand() (cf *Config) {
 	flag.StringVar(&config.DBDsn, "d", "", "db dsn")
 	flag.StringVar(&config.FlagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.StringVar(&config.AccrualSystemAddress, "r", "localhost:8080", "AccrualSystemAddress")
+	flag.StringVar(&config.AccrualSystemAddress, "k", "your_secret_key", "jwtSecretKey")
 
 	flag.Parse()
 
@@ -38,6 +40,10 @@ func NewConfigCommand() (cf *Config) {
 
 	if envAccrualSystemAddress := os.Getenv("ACCRUAL_SYSTEM_ADDRESS"); envAccrualSystemAddress != "" {
 		config.AccrualSystemAddress = envAccrualSystemAddress
+	}
+
+	if jwtSecretKey := os.Getenv("JWT_SECRET_KEY"); jwtSecretKey != "" {
+		config.JwtSecretKey = jwtSecretKey
 	}
 
 	return config

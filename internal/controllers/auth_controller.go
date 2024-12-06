@@ -18,16 +18,9 @@ func NewAuthController(AuthUseCase *usecase.AuthUseCase) *AuthController {
 }
 
 func (a *AuthController) HandleRegisterJSON(w http.ResponseWriter, r *http.Request) {
-	parseCredentials, err := paramsparser.JSONParse[domain.Credentials](w, r)
+	credentials, err := paramsparser.JSONParse[domain.Credentials](w, r)
 	if err != nil {
 		return
 	}
-	a.AuthUseCase.Register(parseCredentials)
-	//JSONResponse, err := serverSaver.FindAndResponseAsJSON(parseMetric, mc.ServiceCollector, w)
-	//if err != nil {
-	//	return
-	//}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("hello"))
+	a.AuthUseCase.Register(w, credentials)
 }

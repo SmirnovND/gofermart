@@ -61,7 +61,7 @@ func NewDB(c *config.Config) *sqlx.DB {
 		}
 
 		// Выполняем миграции
-		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		if err := m.Up(); err != nil {
 			log.Info().
 				Err(err).
 				Msg("Ошибка выполнения миграции ")

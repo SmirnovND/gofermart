@@ -5,6 +5,7 @@ import (
 	"github.com/SmirnovND/gofermart/internal/pkg/config"
 	"github.com/SmirnovND/gofermart/internal/pkg/db"
 	"github.com/SmirnovND/gofermart/internal/repo"
+	"github.com/SmirnovND/gofermart/internal/service"
 	"github.com/SmirnovND/gofermart/internal/usecase"
 	_ "github.com/lib/pq"
 	"go.uber.org/dig"
@@ -21,6 +22,7 @@ func NewContainer() *Container {
 	c.provideUsecase()
 	c.provideController()
 	c.provideRepo()
+	c.provideService()
 	return c
 }
 
@@ -37,6 +39,11 @@ func (c *Container) provideUsecase() {
 
 func (c *Container) provideRepo() {
 	c.container.Provide(repo.NewUserRepo)
+}
+
+func (c *Container) provideService() {
+	c.container.Provide(service.NewAuthService)
+	c.container.Provide(service.NewUserService)
 }
 
 func (c *Container) provideController() {

@@ -1,15 +1,43 @@
 package repo
 
 import (
+	"database/sql"
+	"fmt"
+	"github.com/SmirnovND/gofermart/internal/domain"
 	"github.com/jmoiron/sqlx"
 )
 
 type UserRepo struct {
-	Db *sqlx.DB
+	db *sqlx.DB
 }
 
 func NewUserRepo(db *sqlx.DB) *UserRepo {
 	return &UserRepo{
-		Db: db,
+		db: db,
 	}
+}
+
+func (r *UserRepo) FindUser(login string) (*domain.User, error) {
+	query := `SELECT login, pass_hash FROM "user" WHERE login = $1 LIMIT 1`
+	row := r.db.QueryRow(query, login)
+
+	user := &domain.User{}
+	err := row.Scan(&user.Login, &user.PassHash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("error querying user: %w", err)
+	}
+
+	return user, nil
+}
+
+func (r *UserRepo) SaveUser(user *domain.User) error {
+	query := `INSERT INTO "user" (login, pass_hash) VALUES ($1, $2)`
+	_, err := r.db.Exec(query, user.Login, user.PassHash)
+	if err != nil {
+		return fmt.Errorf("error saving user: %w", err)
+	}
+	return nil
 }
