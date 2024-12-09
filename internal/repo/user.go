@@ -18,14 +18,14 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (r *UserRepo) FindUser(login string) (*domain.User, error) {
-	query := `SELECT login, pass_hash FROM "user" WHERE login = $1 LIMIT 1`
+	query := `SELECT id, login, pass_hash FROM "user" WHERE login = $1 LIMIT 1`
 	row := r.db.QueryRow(query, login)
 
 	user := &domain.User{}
-	err := row.Scan(&user.Login, &user.PassHash)
+	err := row.Scan(&user.Id, &user.Login, &user.PassHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, domain.ErrUserNotFound
+			return nil, domain.ErrNotFound
 		}
 		return nil, fmt.Errorf("error querying user: %w", err)
 	}

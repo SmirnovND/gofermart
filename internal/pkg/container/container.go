@@ -40,6 +40,7 @@ func (c *Container) provideUsecase() {
 
 func (c *Container) provideRepo() {
 	c.container.Provide(repo.NewUserRepo)
+	c.container.Provide(repo.NewOrderRepo)
 }
 
 func (c *Container) provideService() {

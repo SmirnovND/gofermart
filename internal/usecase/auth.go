@@ -21,13 +21,13 @@ func NewAuthUseCase(UserService *service.UserService, AuthService *service.AuthS
 func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Credentials) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := a.UserService.FinUser(credentials.Login)
+	_, err := a.UserService.FindUser(credentials.Login)
 	if err == nil {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	if err != domain.ErrUserNotFound {
+	if err != domain.ErrNotFound {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		return
 	}
@@ -55,9 +55,9 @@ func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Creden
 func (a *AuthUseCase) Login(w http.ResponseWriter, credentials *domain.Credentials) {
 	w.Header().Set("Content-Type", "application/json")
 
-	user, err := a.UserService.FinUser(credentials.Login)
+	user, err := a.UserService.FindUser(credentials.Login)
 	if err != nil {
-		if err == domain.ErrUserNotFound {
+		if err == domain.ErrNotFound {
 			http.Error(w, "Error", http.StatusUnauthorized)
 			return
 		} else {
