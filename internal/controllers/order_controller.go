@@ -16,7 +16,7 @@ func NewOrderController(OrderUseCase *usecase.OrderUseCase) *OrderController {
 	}
 }
 
-func (o *OrderController) HandleOrdersLoad(w http.ResponseWriter, r *http.Request) {
+func (o *OrderController) HandleOrdersUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "text/plain" {
 		http.Error(w, "Content-Type must be text/plain", http.StatusBadRequest)
 		return
@@ -33,5 +33,15 @@ func (o *OrderController) HandleOrdersLoad(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	o.OrderUseCase.OrdersLoad(w, login.(string), orderNumber)
+	o.OrderUseCase.OrdersUpload(w, login.(string), orderNumber)
+}
+
+func (o *OrderController) HandleListUserOrders(w http.ResponseWriter, r *http.Request) {
+	login := r.Context().Value("login")
+	if login == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	o.OrderUseCase.ListUserOrders(w, login.(string))
 }

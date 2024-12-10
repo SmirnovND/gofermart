@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/SmirnovND/gofermart/internal/domain"
+	"github.com/SmirnovND/gofermart/internal/pkg/formater"
 	"github.com/SmirnovND/gofermart/internal/service"
 	"net/http"
 )
@@ -18,7 +19,7 @@ func NewOrderUseCase(OrderService *service.OrderService, UserService *service.Us
 	}
 }
 
-func (o *OrderUseCase) OrdersLoad(w http.ResponseWriter, login string, orderNumber string) {
+func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNumber string) {
 	validNumber := o.OrderService.LunaAlgorithm(orderNumber)
 	if !validNumber {
 		http.Error(w, "the order number is not valid", http.StatusUnprocessableEntity)
@@ -53,4 +54,34 @@ func (o *OrderUseCase) OrdersLoad(w http.ResponseWriter, login string, orderNumb
 	w.WriteHeader(http.StatusAccepted)
 	return
 
+}
+
+func (o *OrderUseCase) ListUserOrders(w http.ResponseWriter, login string) {
+	user, err := o.UserService.FindUser(login)
+	if err != nil {
+		http.Error(w, "user not found", http.StatusInternalServerError)
+		return
+	}
+
+	orderList, err := o.OrderService.ListUserOrders(user.Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(orderList) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	response, err := formater.JSONResponse(orderList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+	return
 }

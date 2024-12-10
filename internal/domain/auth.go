@@ -6,7 +6,3 @@ type Credentials struct {
 	Password string `json:"password"`
 	PassHash string
 }
-
-type User struct {
-	Credentials
-}

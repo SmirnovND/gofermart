@@ -9,6 +9,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/rs/zerolog v1.33.0
+	github.com/shopspring/decimal v1.2.0
 	go.uber.org/dig v1.18.0
 	golang.org/x/crypto v0.27.0
 )

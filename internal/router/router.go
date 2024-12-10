@@ -40,7 +40,10 @@ func Handler(diContainer *container.Container) http.Handler {
 	r.Post("/api/user/login", AuthController.HandleLoginJSON)
 
 	r.Post("/api/user/orders", func(w http.ResponseWriter, r *http.Request) {
-		auth.AuthMiddleware(cf, http.HandlerFunc(OrderController.HandleOrdersLoad)).ServeHTTP(w, r)
+		auth.AuthMiddleware(cf, http.HandlerFunc(OrderController.HandleOrdersUpload)).ServeHTTP(w, r)
+	})
+	r.Get("/api/user/orders", func(w http.ResponseWriter, r *http.Request) {
+		auth.AuthMiddleware(cf, http.HandlerFunc(OrderController.HandleListUserOrders)).ServeHTTP(w, r)
 	})
 
 	healthcheckController := controllers.NewHealthcheckController(db)

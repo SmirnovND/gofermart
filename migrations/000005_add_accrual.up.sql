@@ -1,0 +1,1 @@
+ALTER TABLE "order" ADD COLUMN accrual NUMERIC(12, 2);
