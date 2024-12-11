@@ -54,6 +54,9 @@ func Handler(diContainer *container.Container) http.Handler {
 	r.Post("/api/user/balance/withdraw", func(w http.ResponseWriter, r *http.Request) {
 		auth.AuthMiddleware(cf.JwtSecretKey, http.HandlerFunc(UserController.HandleUserBalanceWithdraw)).ServeHTTP(w, r)
 	})
+	r.Get("/api/user/withdrawals", func(w http.ResponseWriter, r *http.Request) {
+		auth.AuthMiddleware(cf.JwtSecretKey, http.HandlerFunc(UserController.HandleUserWithdrawals)).ServeHTTP(w, r)
+	})
 
 	healthcheckController := controllers.NewHealthcheckController(db)
 	r.Get("/ping", healthcheckController.HandlePing)

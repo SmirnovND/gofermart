@@ -49,3 +49,7 @@ func (b *BalanceService) BalanceWithdraw(tx *sqlx.Tx, user *domain.User, number 
 
 	return nil
 }
+
+func (b *BalanceService) GetWithdrawals(user *domain.User) ([]*domain.Withdrawal, error) {
+	return b.transactionRepo.GetWithdrawals(user.Id)
+}

@@ -2,9 +2,7 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/shopspring/decimal"
-	"time"
 )
 
 type Order struct {
@@ -12,14 +10,6 @@ type Order struct {
 	Status     string          `json:"status"`
 	Accrual    decimal.Decimal `json:"-"`
 	UploadedAt CustomTime      `json:"uploaded_at"`
-}
-
-type CustomTime struct {
-	time.Time
-}
-
-func (ct CustomTime) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + ct.Format(time.RFC3339) + `"`), nil
 }
 
 func (o Order) MarshalJSON() ([]byte, error) {
@@ -42,17 +32,4 @@ func (o Order) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(order)
-}
-
-func (ct *CustomTime) Scan(value interface{}) error {
-	if value == nil {
-		ct.Time = time.Time{}
-		return nil
-	}
-	t, ok := value.(time.Time)
-	if !ok {
-		return fmt.Errorf("cannot scan type %T into CustomTime", value)
-	}
-	ct.Time = t
-	return nil
 }

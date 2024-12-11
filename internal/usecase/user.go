@@ -72,6 +72,36 @@ func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, n
 	return
 }
 
+func (u *UserUseCase) UserWithdrawals(w http.ResponseWriter, login string) {
+	user, err := u.UserService.FindUser(login)
+	if err != nil {
+		http.Error(w, "user not found", http.StatusInternalServerError)
+		return
+	}
+
+	withdrawals, err := u.BalanceService.GetWithdrawals(user)
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, "", http.StatusNoContent)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := formater.JSONResponse(withdrawals)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+	return
+
+}
+
 func (u *UserUseCase) UserBalance(w http.ResponseWriter, login string) {
 	user, err := u.UserService.FindUser(login)
 	if err != nil {

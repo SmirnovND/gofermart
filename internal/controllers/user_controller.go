@@ -26,6 +26,16 @@ func (u *UserController) HandleUserBalance(w http.ResponseWriter, r *http.Reques
 	u.UserUseCase.UserBalance(w, login.(string))
 }
 
+func (u *UserController) HandleUserWithdrawals(w http.ResponseWriter, r *http.Request) {
+	login := r.Context().Value("login")
+	if login == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	u.UserUseCase.UserWithdrawals(w, login.(string))
+}
+
 func (u *UserController) HandleUserBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 	login := r.Context().Value("login")
 	if login == nil {

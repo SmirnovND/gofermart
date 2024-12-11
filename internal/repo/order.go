@@ -19,7 +19,7 @@ func NewOrderRepo(db *sqlx.DB) *OrderRepo {
 }
 
 func (r *OrderRepo) FindUserOrders(userId int) ([]*domain.Order, error) {
-	query := `SELECT number, status, accrual, uploaded_at FROM "order" WHERE user_id = $1`
+	query := `SELECT number, status, accrual, uploaded_at FROM "order" WHERE user_id = $1 ORDER BY uploaded_at DESC`
 	rows, err := r.db.Query(query, userId)
 	if err != nil {
 		return nil, fmt.Errorf("error querying FindUserOrders: %w", err)
