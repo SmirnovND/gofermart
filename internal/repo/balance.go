@@ -30,12 +30,24 @@ func (b *BalanceRepo) SaveBalance(userId int, value decimal.Decimal) error {
 	if b.tx != nil {
 		exec = b.tx.Exec
 	}
-	fmt.Println(userId)
-	fmt.Println(value)
 	query := `INSERT INTO "balance" (user_id, value) VALUES ($1, $2)`
 	_, err := exec(query, userId, value)
 	if err != nil {
 		return fmt.Errorf("error saving balance: %w", err)
+	}
+	return nil
+}
+
+func (b *BalanceRepo) UpdateBalance(userId int, value decimal.Decimal) error {
+	exec := b.db.Exec
+	if b.tx != nil {
+		exec = b.tx.Exec
+	}
+	query := `UPDATE "balance" SET value = value - $2, total_points_used = total_points_used + $2 
+                 WHERE user_id = $1 AND value >= $2;`
+	_, err := exec(query, userId, value)
+	if err != nil {
+		return fmt.Errorf("error UpdateBalance: %w", err)
 	}
 	return nil
 }

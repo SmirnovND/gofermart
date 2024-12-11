@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -17,7 +16,6 @@ func NewTransactionManager(db *sqlx.DB) *TransactionManager {
 }
 
 func (tm *TransactionManager) Execute(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
-	fmt.Println(tm.db)
 	tx, err := tm.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err

@@ -46,9 +46,7 @@ func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Creden
 		return
 	}
 
-	// Начинаем транзакцию
 	ctx := context.Background()
-
 	var user *domain.User
 	var txErr error
 

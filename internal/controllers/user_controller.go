@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/SmirnovND/gofermart/internal/pkg/paramsparser"
 	"github.com/SmirnovND/gofermart/internal/usecase"
 	"net/http"
 )
@@ -23,4 +24,24 @@ func (u *UserController) HandleUserBalance(w http.ResponseWriter, r *http.Reques
 	}
 
 	u.UserUseCase.UserBalance(w, login.(string))
+}
+
+func (u *UserController) HandleUserBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
+	login := r.Context().Value("login")
+	if login == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	type Withdraw struct {
+		Number string  `json:"order"`
+		Sum    float64 `json:"sum"`
+	}
+
+	withdraw, err := paramsparser.JSONParse[Withdraw](w, r)
+	if err != nil {
+		return
+	}
+
+	u.UserUseCase.UserBalanceWithdraw(w, login.(string), withdraw.Number, withdraw.Sum)
 }

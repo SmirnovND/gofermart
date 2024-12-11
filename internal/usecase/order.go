@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/SmirnovND/gofermart/internal/domain"
 	"github.com/SmirnovND/gofermart/internal/pkg/formater"
+	"github.com/SmirnovND/gofermart/internal/pkg/luna"
 	"github.com/SmirnovND/gofermart/internal/service"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func NewOrderUseCase(OrderService *service.OrderService, UserService *service.Us
 }
 
 func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNumber string) {
-	validNumber := o.OrderService.LunaAlgorithm(orderNumber)
+	validNumber := luna.LunaAlgorithm(orderNumber)
 	if !validNumber {
 		http.Error(w, "the order number is not valid", http.StatusUnprocessableEntity)
 		return

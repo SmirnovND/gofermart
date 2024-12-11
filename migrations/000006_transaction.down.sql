@@ -1,1 +1,1 @@
-drop table if exists "transaktion";
+drop table if exists "transaction";

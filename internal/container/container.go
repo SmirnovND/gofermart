@@ -47,6 +47,7 @@ func (c *Container) provideRepo() {
 	c.container.Provide(repo.NewUserRepo)
 	c.container.Provide(repo.NewOrderRepo)
 	c.container.Provide(repo.NewBalanceRepo)
+	c.container.Provide(repo.NewTransactionRepo)
 }
 
 func (c *Container) provideService() {
