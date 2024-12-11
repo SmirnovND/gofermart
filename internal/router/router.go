@@ -2,10 +2,10 @@ package router
 
 import (
 	"fmt"
+	"github.com/SmirnovND/gofermart/internal/container"
 	"github.com/SmirnovND/gofermart/internal/controllers"
 	"github.com/SmirnovND/gofermart/internal/pkg/auth"
 	"github.com/SmirnovND/gofermart/internal/pkg/config"
-	"github.com/SmirnovND/gofermart/internal/pkg/container"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jmoiron/sqlx"
@@ -40,10 +40,10 @@ func Handler(diContainer *container.Container) http.Handler {
 	r.Post("/api/user/login", AuthController.HandleLoginJSON)
 
 	r.Post("/api/user/orders", func(w http.ResponseWriter, r *http.Request) {
-		auth.AuthMiddleware(cf, http.HandlerFunc(OrderController.HandleOrdersUpload)).ServeHTTP(w, r)
+		auth.AuthMiddleware(cf.JwtSecretKey, http.HandlerFunc(OrderController.HandleOrdersUpload)).ServeHTTP(w, r)
 	})
 	r.Get("/api/user/orders", func(w http.ResponseWriter, r *http.Request) {
-		auth.AuthMiddleware(cf, http.HandlerFunc(OrderController.HandleListUserOrders)).ServeHTTP(w, r)
+		auth.AuthMiddleware(cf.JwtSecretKey, http.HandlerFunc(OrderController.HandleListUserOrders)).ServeHTTP(w, r)
 	})
 
 	healthcheckController := controllers.NewHealthcheckController(db)

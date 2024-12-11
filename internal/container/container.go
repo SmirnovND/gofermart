@@ -7,6 +7,7 @@ import (
 	"github.com/SmirnovND/gofermart/internal/repo"
 	"github.com/SmirnovND/gofermart/internal/service"
 	"github.com/SmirnovND/gofermart/internal/usecase"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"go.uber.org/dig"
 )
@@ -30,7 +31,9 @@ func NewContainer() *Container {
 func (c *Container) provideDependencies() {
 	// Регистрируем конфигурацию
 	c.container.Provide(config.NewConfigCommand)
-	c.container.Provide(db.NewDB)
+	c.container.Provide(func(cfg *config.Config) *sqlx.DB {
+		return db.NewDB(cfg.GetDBDsn())
+	})
 	c.container.Provide(db.NewTransactionManager)
 }
 
@@ -60,4 +63,8 @@ func (c *Container) provideController() {
 // Invoke - функция для вызова и инжекта зависимостей
 func (c *Container) Invoke(function interface{}) error {
 	return c.container.Invoke(function)
+}
+
+func ProvideDBDsn() string {
+	return "postgresql://developer:developer@localhost:5432/postgres?sslmode=disable"
 }

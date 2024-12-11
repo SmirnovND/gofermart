@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"github.com/SmirnovND/gofermart/internal/pkg/config"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -20,9 +19,12 @@ func ConfigureDB(db *sqlx.DB) {
 	db.SetMaxOpenConns(maxOpenConnections)
 }
 
-func NewDB(c *config.Config) *sqlx.DB {
-	dsn := c.GetDBDsn()
-	if c.GetDBDsn() == "" {
+type ConfigInterface interface {
+	GetDBDsn() string
+}
+
+func NewDB(dsn string) *sqlx.DB {
+	if dsn == "" {
 		dsn = "invalid_dsn"
 	}
 

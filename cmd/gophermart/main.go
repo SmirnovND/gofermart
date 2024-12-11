@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/SmirnovND/gofermart/internal/container"
 	"github.com/SmirnovND/gofermart/internal/middleware"
 	"github.com/SmirnovND/gofermart/internal/pkg/compressor"
 	"github.com/SmirnovND/gofermart/internal/pkg/config"
-	"github.com/SmirnovND/gofermart/internal/pkg/container"
 	"github.com/SmirnovND/gofermart/internal/pkg/loggeer"
 	"github.com/SmirnovND/gofermart/internal/router"
 	"net/http"

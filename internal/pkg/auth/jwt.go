@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"github.com/SmirnovND/gofermart/internal/pkg/config"
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"strings"
@@ -14,7 +13,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func AuthMiddleware(cf *config.Config, next http.Handler) http.Handler {
+func AuthMiddleware(JwtSecretKey string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		tokenString, err := getToken(r)
@@ -25,7 +24,7 @@ func AuthMiddleware(cf *config.Config, next http.Handler) http.Handler {
 
 		// Проверяем токен
 		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(cf.JwtSecretKey), nil
+			return []byte(JwtSecretKey), nil
 		})
 
 		if err != nil || !token.Valid {
