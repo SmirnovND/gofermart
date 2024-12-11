@@ -31,6 +31,7 @@ func (c *Container) provideDependencies() {
 	// Регистрируем конфигурацию
 	c.container.Provide(config.NewConfigCommand)
 	c.container.Provide(db.NewDB)
+	c.container.Provide(db.NewTransactionManager)
 }
 
 func (c *Container) provideUsecase() {
@@ -41,12 +42,14 @@ func (c *Container) provideUsecase() {
 func (c *Container) provideRepo() {
 	c.container.Provide(repo.NewUserRepo)
 	c.container.Provide(repo.NewOrderRepo)
+	c.container.Provide(repo.NewBalanceRepo)
 }
 
 func (c *Container) provideService() {
 	c.container.Provide(service.NewAuthService)
 	c.container.Provide(service.NewUserService)
 	c.container.Provide(service.NewOrderService)
+	c.container.Provide(service.NewBalanceService)
 }
 
 func (c *Container) provideController() {

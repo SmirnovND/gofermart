@@ -1,20 +1,34 @@
 package usecase
 
 import (
+	"context"
+	"fmt"
 	"github.com/SmirnovND/gofermart/internal/domain"
+	"github.com/SmirnovND/gofermart/internal/pkg/db"
 	"github.com/SmirnovND/gofermart/internal/service"
+	"github.com/jmoiron/sqlx"
+	"github.com/shopspring/decimal"
 	"net/http"
 )
 
 type AuthUseCase struct {
-	UserService *service.UserService
-	AuthService *service.AuthService
+	UserService        *service.UserService
+	BalanceService     *service.BalanceService
+	AuthService        *service.AuthService
+	TransactionManager *db.TransactionManager
 }
 
-func NewAuthUseCase(UserService *service.UserService, AuthService *service.AuthService) *AuthUseCase {
+func NewAuthUseCase(
+	UserService *service.UserService,
+	AuthService *service.AuthService,
+	BalanceService *service.BalanceService,
+	TransactionManager *db.TransactionManager,
+) *AuthUseCase {
 	return &AuthUseCase{
-		UserService: UserService,
-		AuthService: AuthService,
+		UserService:        UserService,
+		BalanceService:     BalanceService,
+		AuthService:        AuthService,
+		TransactionManager: TransactionManager,
 	}
 }
 
@@ -32,16 +46,35 @@ func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Creden
 		return
 	}
 
-	user, err := a.UserService.SaveUser(credentials.Login, credentials.Password)
+	// Начинаем транзакцию
+	ctx := context.Background()
+
+	var user *domain.User
+	var txErr error
+
+	err = a.TransactionManager.Execute(ctx, func(tx *sqlx.Tx) error {
+		user, txErr = a.UserService.SaveUser(tx, credentials.Login, credentials.Password)
+		if txErr != nil {
+			return txErr
+		}
+
+		txErr = a.BalanceService.SetBalance(tx, user, decimal.NewFromInt(0))
+		if txErr != nil {
+			return txErr
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		http.Error(w, "Error save user", http.StatusInternalServerError)
+		// Обработка ошибки сохранения пользователя
+		http.Error(w, fmt.Sprintf("Error saving user: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Генерируем токен
 	token, err := a.AuthService.GenerateToken(user.Login)
 	if err != nil {
-		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error generating token: %v", err), http.StatusInternalServerError)
 		return
 	}
 

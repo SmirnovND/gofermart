@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SmirnovND/gofermart/internal/domain"
 	"github.com/SmirnovND/gofermart/internal/repo"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserService struct {
@@ -21,7 +22,7 @@ func (u *UserService) FindUser(login string) (*domain.User, error) {
 	return u.repo.FindUser(login)
 }
 
-func (u *UserService) SaveUser(login string, pass string) (*domain.User, error) {
+func (u *UserService) SaveUser(tx *sqlx.Tx, login string, pass string) (*domain.User, error) {
 	user := &domain.User{}
 	user.Login = login
 
@@ -31,7 +32,7 @@ func (u *UserService) SaveUser(login string, pass string) (*domain.User, error) 
 	}
 	user.PassHash = hash
 
-	err = u.repo.SaveUser(user)
+	err = u.repo.WithTx(tx).SaveUser(user)
 	if err != nil {
 		return nil, err
 	}

@@ -9,11 +9,19 @@ import (
 
 type UserRepo struct {
 	db *sqlx.DB
+	tx *sqlx.Tx
 }
 
 func NewUserRepo(db *sqlx.DB) *UserRepo {
 	return &UserRepo{
 		db: db,
+	}
+}
+
+func (r *UserRepo) WithTx(tx *sqlx.Tx) *UserRepo {
+	return &UserRepo{
+		db: r.db,
+		tx: tx,
 	}
 }
 
@@ -34,10 +42,19 @@ func (r *UserRepo) FindUser(login string) (*domain.User, error) {
 }
 
 func (r *UserRepo) SaveUser(user *domain.User) error {
-	query := `INSERT INTO "user" (login, pass_hash) VALUES ($1, $2)`
-	_, err := r.db.Exec(query, user.Login, user.PassHash)
+	exec := r.db.QueryRow
+	if r.tx != nil {
+		exec = r.tx.QueryRow
+	}
+
+	// Запрос с RETURNING id, чтобы получить вставленный id
+	query := `INSERT INTO "user" (login, pass_hash) VALUES ($1, $2) RETURNING id`
+
+	// Выполняем запрос и получаем id
+	err := exec(query, user.Login, user.PassHash).Scan(&user.Id)
 	if err != nil {
 		return fmt.Errorf("error saving user: %w", err)
 	}
+
 	return nil
 }
