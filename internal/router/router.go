@@ -17,16 +17,19 @@ func Handler(diContainer *container.Container) http.Handler {
 	var cf *config.Config
 	var AuthController *controllers.AuthController
 	var OrderController *controllers.OrderController
+	var UserController *controllers.UserController
 	err := diContainer.Invoke(func(
 		d *sqlx.DB,
 		c *config.Config,
 		authControl *controllers.AuthController,
 		orderControl *controllers.OrderController,
+		userController *controllers.UserController,
 	) {
 		db = d
 		cf = c
 		AuthController = authControl
 		OrderController = orderControl
+		UserController = userController
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -44,6 +47,9 @@ func Handler(diContainer *container.Container) http.Handler {
 	})
 	r.Get("/api/user/orders", func(w http.ResponseWriter, r *http.Request) {
 		auth.AuthMiddleware(cf.JwtSecretKey, http.HandlerFunc(OrderController.HandleListUserOrders)).ServeHTTP(w, r)
+	})
+	r.Get("/api/user/balance", func(w http.ResponseWriter, r *http.Request) {
+		auth.AuthMiddleware(cf.JwtSecretKey, http.HandlerFunc(UserController.HandleUserBalance)).ServeHTTP(w, r)
 	})
 
 	healthcheckController := controllers.NewHealthcheckController(db)

@@ -37,8 +37,7 @@ func (o Order) MarshalJSON() ([]byte, error) {
 			// Если Accrual — целое число, сохраняем его как int
 			order.Accrual = o.Accrual.IntPart()
 		} else {
-			// Если Accrual — дробное число, сохраняем как float
-			order.Accrual = o.Accrual
+			order.Accrual, _ = o.Accrual.Float64()
 		}
 	}
 

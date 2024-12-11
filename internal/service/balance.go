@@ -20,3 +20,7 @@ func NewBalanceService(repo *repo.BalanceRepo) *BalanceService {
 func (b *BalanceService) SetBalance(tx *sqlx.Tx, user *domain.User, value decimal.Decimal) error {
 	return b.repo.WithTx(tx).SaveBalance(user.Id, value)
 }
+
+func (b *BalanceService) GetBalance(user *domain.User) (*domain.Balance, error) {
+	return b.repo.FindBalance(user.Id)
+}

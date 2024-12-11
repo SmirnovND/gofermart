@@ -40,6 +40,7 @@ func (c *Container) provideDependencies() {
 func (c *Container) provideUsecase() {
 	c.container.Provide(usecase.NewAuthUseCase)
 	c.container.Provide(usecase.NewOrderUseCase)
+	c.container.Provide(usecase.NewUserUseCase)
 }
 
 func (c *Container) provideRepo() {
@@ -58,6 +59,7 @@ func (c *Container) provideService() {
 func (c *Container) provideController() {
 	c.container.Provide(controllers.NewAuthController)
 	c.container.Provide(controllers.NewOrderController)
+	c.container.Provide(controllers.NewUserController)
 }
 
 // Invoke - функция для вызова и инжекта зависимостей

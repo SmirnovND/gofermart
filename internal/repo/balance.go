@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"github.com/SmirnovND/gofermart/internal/domain"
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 )
@@ -37,4 +38,17 @@ func (b *BalanceRepo) SaveBalance(userId int, value decimal.Decimal) error {
 		return fmt.Errorf("error saving balance: %w", err)
 	}
 	return nil
+}
+
+func (b *BalanceRepo) FindBalance(userId int) (*domain.Balance, error) {
+	query := `SELECT value, total_points_used FROM "balance" WHERE user_id = $1 LIMIT 1`
+	row := b.db.QueryRow(query, userId)
+
+	balance := &domain.Balance{}
+	err := row.Scan(&balance.Current, &balance.Withdrawn)
+	if err != nil {
+		return nil, fmt.Errorf("error querying balance: %w", err)
+	}
+
+	return balance, nil
 }
