@@ -48,6 +48,10 @@ func (t *TransactionRepo) WithdrawTransaction(userId int, value decimal.Decimal,
 	return t.saveTransaction(userId, value, debiting, number)
 }
 
+func (t *TransactionRepo) AccrueTransaction(userId int, value decimal.Decimal, number string) error {
+	return t.saveTransaction(userId, value, accrual, number)
+}
+
 func (t *TransactionRepo) GetWithdrawals(userId int) ([]*domain.Withdrawal, error) {
 	query := `SELECT value, number, updated_at 
 				FROM "transaction" 

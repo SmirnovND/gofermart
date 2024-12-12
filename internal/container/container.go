@@ -1,9 +1,10 @@
 package container
 
 import (
+	"github.com/SmirnovND/gofermart/internal/config"
 	"github.com/SmirnovND/gofermart/internal/controllers"
-	"github.com/SmirnovND/gofermart/internal/pkg/config"
 	"github.com/SmirnovND/gofermart/internal/pkg/db"
+	"github.com/SmirnovND/gofermart/internal/pkg/http"
 	"github.com/SmirnovND/gofermart/internal/repo"
 	"github.com/SmirnovND/gofermart/internal/service"
 	"github.com/SmirnovND/gofermart/internal/usecase"
@@ -35,12 +36,14 @@ func (c *Container) provideDependencies() {
 		return db.NewDB(cfg.GetDBDsn())
 	})
 	c.container.Provide(db.NewTransactionManager)
+	c.container.Provide(http.NewAPIClient)
 }
 
 func (c *Container) provideUsecase() {
 	c.container.Provide(usecase.NewAuthUseCase)
 	c.container.Provide(usecase.NewOrderUseCase)
 	c.container.Provide(usecase.NewUserUseCase)
+	c.container.Provide(usecase.NewProcessingUseCase)
 }
 
 func (c *Container) provideRepo() {
@@ -55,6 +58,9 @@ func (c *Container) provideService() {
 	c.container.Provide(service.NewUserService)
 	c.container.Provide(service.NewOrderService)
 	c.container.Provide(service.NewBalanceService)
+	c.container.Provide(func(cfg *config.Config, client http.APIClient) *service.ProcessingService {
+		return service.NewProcessingService(cfg.AccrualSystemAddress, client)
+	})
 }
 
 func (c *Container) provideController() {

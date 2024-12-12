@@ -51,7 +51,7 @@ func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, n
 	ctx := context.Background()
 	var txErr error
 	err = u.TransactionManager.Execute(ctx, func(tx *sqlx.Tx) error {
-		txErr = u.BalanceService.BalanceWithdraw(tx, user, number, decSum)
+		txErr = u.BalanceService.WithdrawBalance(tx, user, number, decSum)
 		if txErr != nil {
 			return txErr
 		}

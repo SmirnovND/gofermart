@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/SmirnovND/gofermart/internal/pkg/config"
+	"github.com/SmirnovND/gofermart/internal/config"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"

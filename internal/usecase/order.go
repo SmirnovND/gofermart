@@ -9,14 +9,20 @@ import (
 )
 
 type OrderUseCase struct {
-	OrderService *service.OrderService
-	UserService  *service.UserService
+	orderService      *service.OrderService
+	userService       *service.UserService
+	processingUseCase *ProcessingUseCase
 }
 
-func NewOrderUseCase(OrderService *service.OrderService, UserService *service.UserService) *OrderUseCase {
+func NewOrderUseCase(
+	OrderService *service.OrderService,
+	UserService *service.UserService,
+	ProcessingUseCase *ProcessingUseCase,
+) *OrderUseCase {
 	return &OrderUseCase{
-		OrderService: OrderService,
-		UserService:  UserService,
+		orderService:      OrderService,
+		userService:       UserService,
+		processingUseCase: ProcessingUseCase,
 	}
 }
 
@@ -27,13 +33,13 @@ func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNu
 		return
 	}
 
-	user, err := o.UserService.FindUser(login)
+	user, err := o.userService.FindUser(login)
 	if err != nil {
 		http.Error(w, "user not found", http.StatusInternalServerError)
 		return
 	}
 
-	userId, err := o.OrderService.FindUserIdByOrderNumber(orderNumber)
+	userId, err := o.orderService.FindUserIdByOrderNumber(orderNumber)
 	switch {
 	case err != domain.ErrNotFound && userId == user.Id:
 		w.WriteHeader(http.StatusOK)
@@ -46,11 +52,15 @@ func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNu
 		return
 	}
 
-	err = o.OrderService.SaveOrder(user.Id, orderNumber)
+	err = o.orderService.SaveOrder(user.Id, orderNumber)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	go func() {
+		_ = o.processingUseCase.CheckProcessedAndAccrueBalance(orderNumber, user)
+	}()
 
 	w.WriteHeader(http.StatusAccepted)
 	return
@@ -58,13 +68,13 @@ func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNu
 }
 
 func (o *OrderUseCase) ListUserOrders(w http.ResponseWriter, login string) {
-	user, err := o.UserService.FindUser(login)
+	user, err := o.userService.FindUser(login)
 	if err != nil {
 		http.Error(w, "user not found", http.StatusInternalServerError)
 		return
 	}
 
-	orderList, err := o.OrderService.ListUserOrders(user.Id)
+	orderList, err := o.orderService.ListUserOrders(user.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -27,7 +27,7 @@ func (b *BalanceService) GetBalance(user *domain.User) (*domain.Balance, error) 
 	return b.repo.FindBalance(user.Id)
 }
 
-func (b *BalanceService) BalanceWithdraw(tx *sqlx.Tx, user *domain.User, number string, decSum decimal.Decimal) error {
+func (b *BalanceService) WithdrawBalance(tx *sqlx.Tx, user *domain.User, number string, decSum decimal.Decimal) error {
 	balance, err := b.GetBalance(user)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func (b *BalanceService) BalanceWithdraw(tx *sqlx.Tx, user *domain.User, number 
 		return err
 	}
 
-	err = b.repo.WithTx(tx).UpdateBalance(user.Id, decSum)
+	err = b.repo.WithTx(tx).WithdrawBalance(user.Id, decSum)
 	if err != nil {
 		return err
 	}
@@ -52,4 +52,18 @@ func (b *BalanceService) BalanceWithdraw(tx *sqlx.Tx, user *domain.User, number 
 
 func (b *BalanceService) GetWithdrawals(user *domain.User) ([]*domain.Withdrawal, error) {
 	return b.transactionRepo.GetWithdrawals(user.Id)
+}
+
+func (b *BalanceService) AccrueBalance(tx *sqlx.Tx, user *domain.User, number string, decSum decimal.Decimal) error {
+	err := b.transactionRepo.WithTx(tx).AccrueTransaction(user.Id, decSum, number)
+	if err != nil {
+		return err
+	}
+
+	err = b.repo.WithTx(tx).AccrueBalance(user.Id, decSum)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

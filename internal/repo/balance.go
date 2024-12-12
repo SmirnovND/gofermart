@@ -38,7 +38,7 @@ func (b *BalanceRepo) SaveBalance(userId int, value decimal.Decimal) error {
 	return nil
 }
 
-func (b *BalanceRepo) UpdateBalance(userId int, value decimal.Decimal) error {
+func (b *BalanceRepo) WithdrawBalance(userId int, value decimal.Decimal) error {
 	exec := b.db.Exec
 	if b.tx != nil {
 		exec = b.tx.Exec
@@ -47,7 +47,21 @@ func (b *BalanceRepo) UpdateBalance(userId int, value decimal.Decimal) error {
                  WHERE user_id = $1 AND value >= $2;`
 	_, err := exec(query, userId, value)
 	if err != nil {
-		return fmt.Errorf("error UpdateBalance: %w", err)
+		return fmt.Errorf("error WithdrawBalance: %w", err)
+	}
+	return nil
+}
+
+func (b *BalanceRepo) AccrueBalance(userId int, value decimal.Decimal) error {
+	exec := b.db.Exec
+	if b.tx != nil {
+		exec = b.tx.Exec
+	}
+	query := `UPDATE "balance" SET value = value + $2 
+                 WHERE user_id = $1 AND value >= $2;`
+	_, err := exec(query, userId, value)
+	if err != nil {
+		return fmt.Errorf("error AccrueBalance: %w", err)
 	}
 	return nil
 }
