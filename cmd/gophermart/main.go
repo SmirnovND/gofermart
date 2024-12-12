@@ -5,7 +5,7 @@ import (
 	"github.com/SmirnovND/gofermart/internal/container"
 	"github.com/SmirnovND/gofermart/internal/middleware"
 	"github.com/SmirnovND/gofermart/internal/pkg/compressor"
-	"github.com/SmirnovND/gofermart/internal/pkg/loggeer"
+	"github.com/SmirnovND/gofermart/internal/pkg/logger"
 	"github.com/SmirnovND/gofermart/internal/router"
 	"net/http"
 )
@@ -29,7 +29,7 @@ func Run() error {
 
 	return http.ListenAndServe(cf.GetFlagRunAddr(), middleware.ChainMiddleware(
 		router.Handler(diContainer),
-		loggeer.WithLogging,
+		logger.WithLogging,
 		compressor.WithDecompression,
 		compressor.WithCompression,
 	))

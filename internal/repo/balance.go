@@ -58,7 +58,7 @@ func (b *BalanceRepo) AccrueBalance(userId int, value decimal.Decimal) error {
 		exec = b.tx.Exec
 	}
 	query := `UPDATE "balance" SET value = value + $2 
-                 WHERE user_id = $1 AND value >= $2;`
+                 WHERE user_id = $1;`
 	_, err := exec(query, userId, value)
 	if err != nil {
 		return fmt.Errorf("error AccrueBalance: %w", err)

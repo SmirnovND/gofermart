@@ -10,11 +10,19 @@ import (
 
 type OrderRepo struct {
 	db *sqlx.DB
+	tx *sqlx.Tx
 }
 
 func NewOrderRepo(db *sqlx.DB) *OrderRepo {
 	return &OrderRepo{
 		db: db,
+	}
+}
+
+func (r *OrderRepo) WithTx(tx *sqlx.Tx) *OrderRepo {
+	return &OrderRepo{
+		db: r.db,
+		tx: tx,
 	}
 }
 
@@ -78,6 +86,20 @@ func (r *OrderRepo) SaveOrder(userId int, orderNumber string) error {
 	_, err := r.db.Exec(query, userId, orderNumber)
 	if err != nil {
 		return fmt.Errorf("error saving order: %w", err)
+	}
+	return nil
+}
+
+func (r *OrderRepo) ChangeStatus(number string, status string) error {
+	exec := r.db.Exec
+	if r.tx != nil {
+		exec = r.tx.Exec
+	}
+	query := `UPDATE "order" SET status = $2 
+                 WHERE number = $1;`
+	_, err := exec(query, number, status)
+	if err != nil {
+		return fmt.Errorf("error ChangeStatus: %w", err)
 	}
 	return nil
 }

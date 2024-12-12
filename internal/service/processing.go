@@ -11,12 +11,14 @@ import (
 )
 
 const Processed = "PROCESSED"
+const Invalid = "INVALID"
+const Processing = "PROCESSING"
 
 type ProcessingService struct {
-	apiClient http2.APIClient
+	apiClient *http2.APIClient
 }
 
-func NewProcessingService(accrualSystemAddress string, APIClient http2.APIClient) *ProcessingService {
+func NewProcessingService(accrualSystemAddress string, APIClient *http2.APIClient) *ProcessingService {
 	APIClient.SetBaseURL(accrualSystemAddress)
 	return &ProcessingService{
 		apiClient: APIClient,

@@ -58,7 +58,7 @@ func (c *Container) provideService() {
 	c.container.Provide(service.NewUserService)
 	c.container.Provide(service.NewOrderService)
 	c.container.Provide(service.NewBalanceService)
-	c.container.Provide(func(cfg *config.Config, client http.APIClient) *service.ProcessingService {
+	c.container.Provide(func(cfg *config.Config, client *http.APIClient) *service.ProcessingService {
 		return service.NewProcessingService(cfg.AccrualSystemAddress, client)
 	})
 }

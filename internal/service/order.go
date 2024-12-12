@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SmirnovND/gofermart/internal/domain"
 	"github.com/SmirnovND/gofermart/internal/repo"
+	"github.com/jmoiron/sqlx"
 )
 
 type OrderService struct {
@@ -25,4 +26,8 @@ func (o *OrderService) FindUserIdByOrderNumber(orderNumber string) (int, error) 
 
 func (o *OrderService) ListUserOrders(userId int) ([]*domain.Order, error) {
 	return o.orderRepo.FindUserOrders(userId)
+}
+
+func (o *OrderService) ChangeStatus(tx *sqlx.Tx, number string, status string) error {
+	return o.orderRepo.WithTx(tx).ChangeStatus(number, status)
 }

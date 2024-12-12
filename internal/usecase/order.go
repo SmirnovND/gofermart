@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"github.com/SmirnovND/gofermart/internal/domain"
 	"github.com/SmirnovND/gofermart/internal/pkg/formater"
 	"github.com/SmirnovND/gofermart/internal/pkg/luna"
@@ -59,7 +60,8 @@ func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNu
 	}
 
 	go func() {
-		_ = o.processingUseCase.CheckProcessedAndAccrueBalance(orderNumber, user)
+		err = o.processingUseCase.CheckProcessedAndAccrueBalance(orderNumber, user)
+		fmt.Println(err)
 	}()
 
 	w.WriteHeader(http.StatusAccepted)
