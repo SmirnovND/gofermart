@@ -13,30 +13,27 @@ import (
 )
 
 type UserUseCase struct {
-	BalanceService     *service.BalanceService
-	UserService        *service.UserService
-	OrderService       *service.OrderService
-	TransactionManager *db.TransactionManager
+	balanceService     *service.BalanceService
+	userService        *service.UserService
+	transactionManager *db.TransactionManager
 }
 
 func NewUserUseCase(
 	BalanceService *service.BalanceService,
 	UserService *service.UserService,
-	OrderService *service.OrderService,
 	TransactionManager *db.TransactionManager,
 ) *UserUseCase {
 	return &UserUseCase{
-		BalanceService:     BalanceService,
-		UserService:        UserService,
-		OrderService:       OrderService,
-		TransactionManager: TransactionManager,
+		balanceService:     BalanceService,
+		userService:        UserService,
+		transactionManager: TransactionManager,
 	}
 }
 
 func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, number string, sum float64) {
 	decSum := decimal.NewFromFloat(sum)
 
-	user, err := u.UserService.FindUser(login)
+	user, err := u.userService.FindUser(login)
 	if err != nil {
 		http.Error(w, "user not found", http.StatusInternalServerError)
 		return
@@ -50,8 +47,8 @@ func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, n
 
 	ctx := context.Background()
 	var txErr error
-	err = u.TransactionManager.Execute(ctx, func(tx *sqlx.Tx) error {
-		txErr = u.BalanceService.WithdrawBalance(tx, user, number, decSum)
+	err = u.transactionManager.Execute(ctx, func(tx *sqlx.Tx) error {
+		txErr = u.balanceService.WithdrawBalance(tx, user, number, decSum)
 		if txErr != nil {
 			return txErr
 		}
@@ -73,13 +70,13 @@ func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, n
 }
 
 func (u *UserUseCase) UserWithdrawals(w http.ResponseWriter, login string) {
-	user, err := u.UserService.FindUser(login)
+	user, err := u.userService.FindUser(login)
 	if err != nil {
 		http.Error(w, "user not found", http.StatusInternalServerError)
 		return
 	}
 
-	withdrawals, err := u.BalanceService.GetWithdrawals(user)
+	withdrawals, err := u.balanceService.GetWithdrawals(user)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, "", http.StatusNoContent)
@@ -103,13 +100,13 @@ func (u *UserUseCase) UserWithdrawals(w http.ResponseWriter, login string) {
 }
 
 func (u *UserUseCase) UserBalance(w http.ResponseWriter, login string) {
-	user, err := u.UserService.FindUser(login)
+	user, err := u.userService.FindUser(login)
 	if err != nil {
 		http.Error(w, "user not found", http.StatusInternalServerError)
 		return
 	}
 
-	balance, err := u.BalanceService.GetBalance(user)
+	balance, err := u.balanceService.GetBalance(user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

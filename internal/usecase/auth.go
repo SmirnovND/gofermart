@@ -12,7 +12,7 @@ import (
 )
 
 type AuthUseCase struct {
-	UserService        *service.UserService
+	userService        *service.UserService
 	BalanceService     *service.BalanceService
 	AuthService        *service.AuthService
 	TransactionManager *db.TransactionManager
@@ -25,7 +25,7 @@ func NewAuthUseCase(
 	TransactionManager *db.TransactionManager,
 ) *AuthUseCase {
 	return &AuthUseCase{
-		UserService:        UserService,
+		userService:        UserService,
 		BalanceService:     BalanceService,
 		AuthService:        AuthService,
 		TransactionManager: TransactionManager,
@@ -35,7 +35,7 @@ func NewAuthUseCase(
 func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Credentials) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := a.UserService.FindUser(credentials.Login)
+	_, err := a.userService.FindUser(credentials.Login)
 	if err == nil {
 		w.WriteHeader(http.StatusConflict)
 		return
@@ -51,7 +51,7 @@ func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Creden
 	var txErr error
 
 	err = a.TransactionManager.Execute(ctx, func(tx *sqlx.Tx) error {
-		user, txErr = a.UserService.SaveUser(tx, credentials.Login, credentials.Password)
+		user, txErr = a.userService.SaveUser(tx, credentials.Login, credentials.Password)
 		if txErr != nil {
 			return txErr
 		}
@@ -86,7 +86,7 @@ func (a *AuthUseCase) Register(w http.ResponseWriter, credentials *domain.Creden
 func (a *AuthUseCase) Login(w http.ResponseWriter, credentials *domain.Credentials) {
 	w.Header().Set("Content-Type", "application/json")
 
-	user, err := a.UserService.FindUser(credentials.Login)
+	user, err := a.userService.FindUser(credentials.Login)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, "Error", http.StatusUnauthorized)

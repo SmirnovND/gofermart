@@ -8,13 +8,13 @@ import (
 
 type UserService struct {
 	repo        *repo.UserRepo
-	AuthService *AuthService
+	authService *AuthService
 }
 
 func NewUserService(repo *repo.UserRepo, AuthService *AuthService) *UserService {
 	return &UserService{
 		repo:        repo,
-		AuthService: AuthService,
+		authService: AuthService,
 	}
 }
 
@@ -26,7 +26,7 @@ func (u *UserService) SaveUser(tx *sqlx.Tx, login string, pass string) (*domain.
 	user := &domain.User{}
 	user.Login = login
 
-	hash, err := u.AuthService.HashPassword(pass)
+	hash, err := u.authService.HashPassword(pass)
 	if err != nil {
 		return nil, err
 	}
