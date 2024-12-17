@@ -1,6 +1,8 @@
 package luna
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func LunaAlgorithm(orderNumber string) bool {
 	var digits []int
@@ -13,16 +15,20 @@ func LunaAlgorithm(orderNumber string) bool {
 	}
 
 	var sum int
+	isSecond := false
+
 	for i := len(digits) - 1; i >= 0; i-- {
 		digit := digits[i]
 
-		if (len(digits)-i)%2 == 0 {
+		if isSecond {
 			digit *= 2
 			if digit > 9 {
-				digit = digit - 9
+				digit -= 9
 			}
 		}
+
 		sum += digit
+		isSecond = !isSecond
 	}
 
 	return sum%10 == 0

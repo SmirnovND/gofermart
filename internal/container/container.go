@@ -5,6 +5,7 @@ import (
 	"github.com/SmirnovND/gofermart/internal/controllers"
 	"github.com/SmirnovND/gofermart/internal/pkg/db"
 	"github.com/SmirnovND/gofermart/internal/pkg/http"
+	"github.com/SmirnovND/gofermart/internal/pkg/rabbitmq"
 	"github.com/SmirnovND/gofermart/internal/repo"
 	"github.com/SmirnovND/gofermart/internal/service"
 	"github.com/SmirnovND/gofermart/internal/usecase"
@@ -25,6 +26,7 @@ func NewContainer() *Container {
 	c.provideService()
 	c.provideUsecase()
 	c.provideController()
+	c.provideRabbitMQ()
 	return c
 }
 
@@ -58,6 +60,7 @@ func (c *Container) provideService() {
 	c.container.Provide(service.NewUserService)
 	c.container.Provide(service.NewOrderService)
 	c.container.Provide(service.NewBalanceService)
+	c.container.Provide(service.NewRabbitMqService)
 	c.container.Provide(func(cfg *config.Config, client *http.APIClient) *service.ProcessingService {
 		return service.NewProcessingService(cfg.AccrualSystemAddress, client)
 	})
@@ -67,6 +70,18 @@ func (c *Container) provideController() {
 	c.container.Provide(controllers.NewAuthController)
 	c.container.Provide(controllers.NewOrderController)
 	c.container.Provide(controllers.NewUserController)
+}
+
+func (c *Container) provideRabbitMQ() {
+	c.container.Provide(func(cfg *config.Config) *rabbitmq.RabbitMQConnection {
+		return rabbitmq.NewRabbitMQConnection(cfg.GetRabbitURL())
+	})
+	c.container.Provide(func(conn *rabbitmq.RabbitMQConnection, cfg *config.Config) *rabbitmq.RabbitMQProducer {
+		return rabbitmq.NewRabbitMQProducer(conn.Conn)
+	})
+	c.container.Provide(func(conn *rabbitmq.RabbitMQConnection, cfg *config.Config) *rabbitmq.RabbitMQConsumer {
+		return rabbitmq.NewRabbitMQConsumer(conn.Conn, cfg.GetRabbitQueue())
+	})
 }
 
 // Invoke - функция для вызова и инжекта зависимостей

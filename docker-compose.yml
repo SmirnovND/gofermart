@@ -13,6 +13,14 @@ services:
             - 5432:5432
         networks:
             - net
+    rabbitmq:
+        build: ./docker/rabbit
+        ports:
+            - 5672:5672
+            - 15672:15672
+        networks:
+            - net
+        restart: always
 networks:
     net:
         driver: bridge

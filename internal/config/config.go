@@ -10,10 +10,20 @@ type Config struct {
 	FlagRunAddr          string
 	AccrualSystemAddress string
 	JwtSecretKey         string
+	RabbitURL            string
+	RabbitQueue          string
 }
 
 func (c *Config) GetDBDsn() string {
 	return c.DBDsn
+}
+
+func (c *Config) GetRabbitURL() string {
+	return c.RabbitURL
+}
+
+func (c *Config) GetRabbitQueue() string {
+	return c.RabbitQueue
 }
 
 func (c *Config) GetFlagRunAddr() string {
@@ -27,6 +37,8 @@ func NewConfigCommand() (cf *Config) {
 	flag.StringVar(&config.FlagRunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.StringVar(&config.AccrualSystemAddress, "r", "http://localhost:3004", "AccrualSystemAddress")
 	flag.StringVar(&config.JwtSecretKey, "k", "yoursecretkey", "jwtSecretKey")
+	flag.StringVar(&config.RabbitURL, "u", "amqp://guest:guest@localhost:5672/", "RabbitURL")
+	flag.StringVar(&config.RabbitQueue, "q", "processing", "RabbitQueue")
 
 	flag.Parse()
 
@@ -44,6 +56,14 @@ func NewConfigCommand() (cf *Config) {
 
 	if jwtSecretKey := os.Getenv("JWT_SECRET_KEY"); jwtSecretKey != "" {
 		config.JwtSecretKey = jwtSecretKey
+	}
+
+	if rabbitURL := os.Getenv("RABBIT_URL"); rabbitURL != "" {
+		config.RabbitURL = rabbitURL
+	}
+
+	if rabbitQueue := os.Getenv("RABBIT_QUEUE"); rabbitQueue != "" {
+		config.RabbitQueue = rabbitQueue
 	}
 
 	return config

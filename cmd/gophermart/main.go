@@ -6,7 +6,11 @@ import (
 	"github.com/SmirnovND/gofermart/internal/middleware"
 	"github.com/SmirnovND/gofermart/internal/pkg/compressor"
 	"github.com/SmirnovND/gofermart/internal/pkg/logger"
+	"github.com/SmirnovND/gofermart/internal/pkg/rabbitmq"
 	"github.com/SmirnovND/gofermart/internal/router"
+	"github.com/SmirnovND/gofermart/internal/service"
+	"github.com/SmirnovND/gofermart/internal/usecase"
+	"log"
 	"net/http"
 )
 
@@ -24,8 +28,38 @@ func Run() error {
 		cf = c
 	})
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
+	// Подключение к RabbitMQ через контейнер
+	var rabbitConnection *rabbitmq.RabbitMQConnection
+	diContainer.Invoke(func(rc *rabbitmq.RabbitMQConnection) {
+		rabbitConnection = rc
+	})
+	defer rabbitConnection.Close()
+
+	var (
+		rabbitProducer *rabbitmq.RabbitMQProducer
+		rabbitConsumer *rabbitmq.RabbitMQConsumer
+	)
+
+	err := diContainer.Invoke(func(p *rabbitmq.RabbitMQProducer, c *rabbitmq.RabbitMQConsumer) {
+		rabbitProducer = p
+		rabbitConsumer = c
+	})
+	if err != nil {
+		log.Fatalf("Failed to resolve dependencies: %s", err)
+	}
+
+	defer rabbitProducer.Close()
+	defer rabbitConsumer.Close()
+
+	var rabbitMqService *service.RabbitMqService
+	var processingUseCase *usecase.ProcessingUseCase
+	diContainer.Invoke(func(rs *service.RabbitMqService, pu *usecase.ProcessingUseCase) {
+		rabbitMqService = rs
+		processingUseCase = pu
+	})
+	go func() {
+		rabbitMqService.Consume(processingUseCase.CheckProcessedAndAccrueBalance)
+	}()
 
 	return http.ListenAndServe(cf.GetFlagRunAddr(), middleware.ChainMiddleware(
 		router.Handler(diContainer),

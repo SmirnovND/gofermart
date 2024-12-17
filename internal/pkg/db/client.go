@@ -19,10 +19,6 @@ func ConfigureDB(db *sqlx.DB) {
 	db.SetMaxOpenConns(maxOpenConnections)
 }
 
-type ConfigInterface interface {
-	GetDBDsn() string
-}
-
 func NewDB(dsn string) *sqlx.DB {
 	if dsn == "" {
 		dsn = "invalid_dsn"

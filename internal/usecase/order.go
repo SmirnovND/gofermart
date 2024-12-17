@@ -60,7 +60,7 @@ func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNu
 	}
 
 	go func() {
-		err = o.processingUseCase.CheckProcessedAndAccrueBalance(orderNumber, user)
+		err = o.processingUseCase.CheckProcessedAndAccrueBalance(orderNumber, user.Id)
 		fmt.Println(err)
 	}()
 

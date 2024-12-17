@@ -80,6 +80,28 @@ func (r *OrderRepo) FindUserIdByOrderNumber(number string) (int, error) {
 
 	return userId, nil
 }
+func (r *OrderRepo) FindOrderByNumber(number string) (*domain.Order, error) {
+	query := `SELECT number, status, accrual, uploaded_at FROM "order" WHERE number = $1 LIMIT 1`
+	row := r.db.QueryRow(query, number)
+
+	order := &domain.Order{}
+	var accrual sql.NullFloat64
+	err := row.Scan(&order.Number, &order.Status, &accrual, &order.UploadedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("error querying FindOrderByNumber: %w", err)
+	}
+
+	if accrual.Valid {
+		order.Accrual = decimal.NewFromFloat(accrual.Float64)
+	} else {
+		order.Accrual = decimal.Decimal{}
+	}
+
+	return order, nil
+}
 
 func (r *OrderRepo) SaveOrder(userId int, orderNumber string) error {
 	query := `INSERT INTO "order" (user_id, number) VALUES ($1, $2)`
@@ -99,7 +121,21 @@ func (r *OrderRepo) ChangeStatus(number string, status string) error {
                  WHERE number = $1;`
 	_, err := exec(query, number, status)
 	if err != nil {
-		return fmt.Errorf("error ChangeStatus: %w", err)
+		return fmt.Errorf("error ChangeStatusTx: %w", err)
+	}
+	return nil
+}
+
+func (r *OrderRepo) SetAccrual(number string, accrual float64) error {
+	exec := r.db.Exec
+	if r.tx != nil {
+		exec = r.tx.Exec
+	}
+	query := `UPDATE "order" SET accrual = $2 
+                 WHERE number = $1;`
+	_, err := exec(query, number, accrual)
+	if err != nil {
+		return fmt.Errorf("error SetAccrual: %w", err)
 	}
 	return nil
 }

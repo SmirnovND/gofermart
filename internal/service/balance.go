@@ -54,13 +54,13 @@ func (b *BalanceService) GetWithdrawals(user *domain.User) ([]*domain.Withdrawal
 	return b.transactionRepo.GetWithdrawals(user.Id)
 }
 
-func (b *BalanceService) AccrueBalance(tx *sqlx.Tx, user *domain.User, number string, decSum decimal.Decimal) error {
-	err := b.transactionRepo.WithTx(tx).AccrueTransaction(user.Id, decSum, number)
+func (b *BalanceService) AccrueBalance(tx *sqlx.Tx, userId int, number string, decSum decimal.Decimal) error {
+	err := b.transactionRepo.WithTx(tx).AccrueTransaction(userId, decSum, number)
 	if err != nil {
 		return err
 	}
 
-	err = b.repo.WithTx(tx).AccrueBalance(user.Id, decSum)
+	err = b.repo.WithTx(tx).AccrueBalance(userId, decSum)
 	if err != nil {
 		return err
 	}
