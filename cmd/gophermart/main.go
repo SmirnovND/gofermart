@@ -6,10 +6,12 @@ import (
 	"github.com/SmirnovND/gofermart/internal/middleware"
 	"github.com/SmirnovND/gofermart/internal/pkg/compressor"
 	"github.com/SmirnovND/gofermart/internal/pkg/logger"
+	"github.com/SmirnovND/gofermart/internal/pkg/migrations"
 	"github.com/SmirnovND/gofermart/internal/pkg/rabbitmq"
 	"github.com/SmirnovND/gofermart/internal/router"
 	"github.com/SmirnovND/gofermart/internal/service"
 	"github.com/SmirnovND/gofermart/internal/usecase"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
 )
@@ -27,6 +29,14 @@ func Run() error {
 	diContainer.Invoke(func(c *config.Config) {
 		cf = c
 	})
+
+	var dbx *sqlx.DB
+	diContainer.Invoke(func(db *sqlx.DB) {
+		dbx = db
+	})
+
+	dbBase := dbx.DB
+	migrations.StartMigrations(dbBase)
 
 	// Подключение к RabbitMQ через контейнер
 	var rabbitConnection *rabbitmq.RabbitMQConnection

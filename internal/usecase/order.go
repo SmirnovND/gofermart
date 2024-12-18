@@ -27,36 +27,45 @@ func NewOrderUseCase(
 	}
 }
 
-func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNumber string) {
+func (o *OrderUseCase) OrdersUpload(login string, orderNumber string) (int, *domain.Error) {
 	validNumber := luna.LunaAlgorithm(orderNumber)
 	if !validNumber {
-		http.Error(w, "the order number is not valid", http.StatusUnprocessableEntity)
-		return
+		return 0, &domain.Error{
+			Message:   "the order number is not valid",
+			CodeValue: http.StatusUnprocessableEntity,
+		}
 	}
 
 	user, err := o.userService.FindUser(login)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusInternalServerError)
-		return
+		return 0, &domain.Error{
+			Message:   "user not found",
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	userId, err := o.orderService.FindUserIdByOrderNumber(orderNumber)
 	switch {
 	case err != domain.ErrNotFound && userId == user.Id:
-		w.WriteHeader(http.StatusOK)
-		return
+		return http.StatusOK, nil
 	case err == nil:
-		w.WriteHeader(http.StatusConflict)
-		return
+		return 0, &domain.Error{
+			Message:   "the order is registered to another user",
+			CodeValue: http.StatusConflict,
+		}
 	case err != domain.ErrNotFound:
-		http.Error(w, "FindUserIdByOrderNumber: "+err.Error(), http.StatusInternalServerError)
-		return
+		return 0, &domain.Error{
+			Message:   "FindUserIdByOrderNumber: " + err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	err = o.orderService.SaveOrder(user.Id, orderNumber)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return 0, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	go func() {
@@ -64,37 +73,41 @@ func (o *OrderUseCase) OrdersUpload(w http.ResponseWriter, login string, orderNu
 		fmt.Println(err)
 	}()
 
-	w.WriteHeader(http.StatusAccepted)
-	return
+	return http.StatusAccepted, nil
 
 }
 
-func (o *OrderUseCase) ListUserOrders(w http.ResponseWriter, login string) {
+func (o *OrderUseCase) ListUserOrders(login string) ([]byte, *domain.Error) {
 	user, err := o.userService.FindUser(login)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   "user not found",
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	orderList, err := o.orderService.ListUserOrders(user.Id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	if len(orderList) == 0 {
-		w.WriteHeader(http.StatusNoContent)
-		return
+		return nil, &domain.Error{
+			Message:   "",
+			CodeValue: http.StatusNoContent,
+		}
 	}
 
 	response, err := formater.JSONResponse(orderList)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
-	return
+	return response, nil
 }

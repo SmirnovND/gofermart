@@ -23,7 +23,16 @@ func (u *UserController) HandleUserBalance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	u.UserUseCase.UserBalance(w, login.(string))
+	response, err := u.UserUseCase.UserBalance(login.(string))
+	if err != nil {
+		http.Error(w, err.Error(), err.Code())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+	return
 }
 
 func (u *UserController) HandleUserWithdrawals(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +42,16 @@ func (u *UserController) HandleUserWithdrawals(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	u.UserUseCase.UserWithdrawals(w, login.(string))
+	response, err := u.UserUseCase.UserWithdrawals(login.(string))
+	if err != nil {
+		http.Error(w, err.Error(), err.Code())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+	return
 }
 
 func (u *UserController) HandleUserBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
@@ -53,5 +71,12 @@ func (u *UserController) HandleUserBalanceWithdraw(w http.ResponseWriter, r *htt
 		return
 	}
 
-	u.UserUseCase.UserBalanceWithdraw(w, login.(string), withdraw.Number, withdraw.Sum)
+	errDomain := u.UserUseCase.UserBalanceWithdraw(login.(string), withdraw.Number, withdraw.Sum)
+	if errDomain != nil {
+		http.Error(w, errDomain.Error(), errDomain.Code())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return
 }

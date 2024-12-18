@@ -30,19 +30,23 @@ func NewUserUseCase(
 	}
 }
 
-func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, number string, sum float64) {
+func (u *UserUseCase) UserBalanceWithdraw(login string, number string, sum float64) *domain.Error {
 	decSum := decimal.NewFromFloat(sum)
 
 	user, err := u.userService.FindUser(login)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusInternalServerError)
-		return
+		return &domain.Error{
+			Message:   "user not found",
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	validNumber := luna.LunaAlgorithm(number)
 	if !validNumber {
-		http.Error(w, "the order number is not valid", http.StatusUnprocessableEntity)
-		return
+		return &domain.Error{
+			Message:   "the order number is not valid",
+			CodeValue: http.StatusUnprocessableEntity,
+		}
 	}
 
 	ctx := context.Background()
@@ -58,68 +62,79 @@ func (u *UserUseCase) UserBalanceWithdraw(w http.ResponseWriter, login string, n
 
 	if err != nil {
 		if err == domain.ErrInsufficientFunds {
-			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-			return
+			return &domain.Error{
+				Message:   err.Error(),
+				CodeValue: http.StatusUnprocessableEntity,
+			}
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
-	w.WriteHeader(http.StatusOK)
-	return
+	return nil
 }
 
-func (u *UserUseCase) UserWithdrawals(w http.ResponseWriter, login string) {
+func (u *UserUseCase) UserWithdrawals(login string) ([]byte, *domain.Error) {
 	user, err := u.userService.FindUser(login)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   "user not found",
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	withdrawals, err := u.balanceService.GetWithdrawals(user)
 	if err != nil {
 		if err == domain.ErrNotFound {
-			http.Error(w, "", http.StatusNoContent)
-			return
+			return nil, &domain.Error{
+				Message:   "",
+				CodeValue: http.StatusNoContent,
+			}
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	response, err := formater.JSONResponse(withdrawals)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
-	return
+	return response, nil
 
 }
 
-func (u *UserUseCase) UserBalance(w http.ResponseWriter, login string) {
+func (u *UserUseCase) UserBalance(login string) ([]byte, *domain.Error) {
 	user, err := u.userService.FindUser(login)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   "user not found",
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	balance, err := u.balanceService.GetBalance(user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
 	response, err := formater.JSONResponse(balance)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, &domain.Error{
+			Message:   err.Error(),
+			CodeValue: http.StatusInternalServerError,
+		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
-	return
+	return response, nil
 }

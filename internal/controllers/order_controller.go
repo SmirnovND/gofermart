@@ -30,10 +30,17 @@ func (o *OrderController) HandleOrdersUpload(w http.ResponseWriter, r *http.Requ
 
 	orderNumber, err := paramsparser.TextParse(w, r)
 	if err != nil {
+		http.Error(w, "Error TextParse", http.StatusInternalServerError)
 		return
 	}
 
-	o.OrderUseCase.OrdersUpload(w, login.(string), orderNumber)
+	upload, errDomain := o.OrderUseCase.OrdersUpload(login.(string), orderNumber)
+	if errDomain != nil {
+		http.Error(w, err.Error(), errDomain.Code())
+		return
+	}
+
+	w.WriteHeader(upload)
 }
 
 func (o *OrderController) HandleListUserOrders(w http.ResponseWriter, r *http.Request) {
@@ -43,5 +50,14 @@ func (o *OrderController) HandleListUserOrders(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	o.OrderUseCase.ListUserOrders(w, login.(string))
+	response, err := o.OrderUseCase.ListUserOrders(login.(string))
+	if err != nil {
+		http.Error(w, err.Error(), err.Code())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+	return
 }
